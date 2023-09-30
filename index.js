@@ -8,6 +8,7 @@ function GameBoard() {
   ];
 
   const getBoard = () => board;
+  let roundsLeft = 9;
 
   function printBoard() {
     for (let i = 0; i < 3; i++) {
@@ -21,6 +22,7 @@ function GameBoard() {
 
   function mark(row, column, player) {
     board[row][column] = player.token;
+    roundsLeft--;
   }
 
   function won(player) {
@@ -54,11 +56,14 @@ function GameBoard() {
     return ans;
   }
 
-  return { getBoard, printBoard, mark, won };
+  const tie = () => {
+    return roundsLeft === 0;
+  };
+
+  return { getBoard, printBoard, mark, won, tie };
 }
 
-// const board = GameBoard();
-// board.printBoard();
+let game;
 
 function GameController(playerOneName = 'Anurag', playerTwoName = 'Purnima') {
   const board = GameBoard();
@@ -86,14 +91,25 @@ function GameController(playerOneName = 'Anurag', playerTwoName = 'Purnima') {
     console.log(`${activePlayer.name}'s turn.`);
   };
 
+  const gameReset = () => {
+    board.printBoard();
+    const choice = prompt('Play Again ? (Y/N)');
+    if (choice === 'Y') {
+      console.clear();
+      starNewGame();
+    } else {
+      game = null;
+    }
+  };
+
   const playRound = (row, column) => {
     // player cannot mark an already marked cell
     if (board.getBoard()[row][column] !== 0) {
       console.log('Invalid Move ❌❌❌');
-      printNewRound();
       return;
     }
 
+    console.clear();
     console.log(
       `Dropping ${activePlayer.name}'s mark into row = ${row} column = ${column} ...`
     );
@@ -102,12 +118,16 @@ function GameController(playerOneName = 'Anurag', playerTwoName = 'Purnima') {
     // Winning Logic
     if (board.won(activePlayer)) {
       console.log(`${activePlayer.name} has Won the Game 🎉🎉🎉`);
-      board.printBoard();
-      return;
+      gameReset();
+    } else if (board.tie()) {
+      // check if tie
+      console.log(`Game Draw !!`);
+      gameReset();
+    } else {
+      // continue to the next round
+      switchPlayerTurn();
+      printNewRound();
     }
-
-    switchPlayerTurn();
-    printNewRound();
   };
 
   printNewRound();
@@ -119,29 +139,9 @@ function GameController(playerOneName = 'Anurag', playerTwoName = 'Purnima') {
   };
 }
 
-const game = GameController();
+function starNewGame() {
+  console.clear();
+  game = GameController();
+}
 
-/* const displayController = (() => {
-  const getCell = (i, j) => {
-    const cell = document.createElement('div');
-    cell.classList.add('cell');
-    cell.setAttribute('data-row', i);
-    cell.setAttribute('data-col', j);
-    cell.textContent = board[i][j];
-
-    return cell;
-  };
-
-  const renderBoard = () => {
-    for (let i = 0; i < 3; i++) {
-      for (let j = 0; j < 3; j++) {
-        const cell = getCell(i, j);
-        gameBoard.append(cell);
-      }
-    }
-  };
-
-  return { renderBoard };
-})();
-
-displayController.renderBoard(); */
+starNewGame();
